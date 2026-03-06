@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "net/http"
+require "httpx"
 require "json"
 require "time"
 require_relative "errors"
@@ -8,7 +8,8 @@ require_relative "errors"
 module Altertable
   class Client
     DEFAULT_BASE_URL = "https://api.altertable.ai"
-    DEFAULT_TIMEOUT = 5
+    DEFAULT_CONNECT_TIMEOUT = 5
+    DEFAULT_READ_TIMEOUT = 60
     DEFAULT_ENVIRONMENT = "production"
 
     RESERVED_USER_IDS = %w[
@@ -25,10 +26,20 @@ module Altertable
       @api_key = api_key
       @base_url = options[:base_url] || DEFAULT_BASE_URL
       @environment = options[:environment] || DEFAULT_ENVIRONMENT
-      @timeout = options[:request_timeout] || DEFAULT_TIMEOUT
+      @connect_timeout = options[:connect_timeout] || DEFAULT_CONNECT_TIMEOUT
+      @read_timeout = options[:request_timeout] || DEFAULT_READ_TIMEOUT # keeping request_timeout for backward compat if any, but mapping to read
       @release = options[:release]
       @debug = options[:debug] || false
       @on_error = options[:on_error]
+
+      # Initialize HTTPX client with timeouts and keep-alive (default)
+      @http = HTTPX.with(
+        timeout: {
+          connect: @connect_timeout,
+          read: @read_timeout
+        },
+        origin: @base_url
+      )
     end
 
     def track(event, distinct_id, properties = {})
@@ -87,40 +98,43 @@ module Altertable
     end
 
     def post(path, payload)
-      uri = URI("#{@base_url}#{path}")
-      req = Net::HTTP::Post.new(uri)
-      req["X-API-Key"] = @api_key
-      req["Content-Type"] = "application/json"
-      req.body = payload.to_json
-
+      headers = {
+        "X-API-Key" => @api_key,
+        "Content-Type" => "application/json"
+      }
+      
       begin
-        res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == "https", read_timeout: @timeout) do |http|
-          http.request(req)
-        end
-
-        handle_response(res)
+        response = @http.post(path, json: payload, headers: headers)
+        handle_response(response)
       rescue StandardError => e
         handle_error(e)
       end
     end
 
     def handle_response(res)
-      case res.code.to_i
+      # httpx response can be an Error response (connection error etc)
+      if res.is_a?(HTTPX::ErrorResponse)
+        raise NetworkError.new("HTTPX Error: #{res.error.message}", res.error)
+      end
+
+      case res.status
       when 200..299
-        JSON.parse(res.body) rescue {}
+        JSON.parse(res.body.to_s) rescue {}
       when 422
-        error_data = JSON.parse(res.body) rescue {}
-        raise ApiError.new("Unprocessable Entity: #{error_data["message"]}", res.code, error_data)
+        error_data = JSON.parse(res.body.to_s) rescue {}
+        raise ApiError.new("Unprocessable Entity: #{error_data["message"]}", res.status, error_data)
       else
-        raise ApiError.new("HTTP Error: #{res.code}", res.code)
+        raise ApiError.new("HTTP Error: #{res.status}", res.status)
       end
     end
 
     def handle_error(error)
       wrapped_error = if error.is_a?(AltertableError)
                         error
-                      elsif error.is_a?(Net::ReadTimeout) || error.is_a?(Net::OpenTimeout)
+                      elsif error.is_a?(HTTPX::TimeoutError)
                         NetworkError.new("Timeout: #{error.message}", error)
+                      elsif error.is_a?(HTTPX::Error)
+                        NetworkError.new("Connection Error: #{error.message}", error)
                       else
                         AltertableError.new(error.message, error)
                       end
