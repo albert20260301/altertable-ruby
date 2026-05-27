@@ -1,5 +1,29 @@
 # Changelog
 
+## [2.0.0](https://github.com/albert20260301/altertable-ruby/compare/altertable-v1.1.2...altertable/v2.0.0) (2026-05-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* update method signatures to v0.9.0 specs ([#23](https://github.com/albert20260301/altertable-ruby/issues/23))
+
+### Features
+
+* add RBS typings for the SDK ([#19](https://github.com/albert20260301/altertable-ruby/issues/19)) ([38cb619](https://github.com/albert20260301/altertable-ruby/commit/38cb619f20a7e2c1a1090fb67f7253e122e936c4))
+* Add Sorbet typings (RBI) ([#21](https://github.com/albert20260301/altertable-ruby/issues/21)) ([507b41c](https://github.com/albert20260301/altertable-ruby/commit/507b41c755d76758ed0de777acb8eeadea420758))
+* optional http client (faraday/httpx/net-http) with adapter pattern ([#5](https://github.com/albert20260301/altertable-ruby/issues/5)) ([1fb2b79](https://github.com/albert20260301/altertable-ruby/commit/1fb2b79963977aea1d3c4d19e3fdad23b02a296f))
+* plug rubocop ([#25](https://github.com/albert20260301/altertable-ruby/issues/25)) ([1b375d5](https://github.com/albert20260301/altertable-ruby/commit/1b375d5246d595972378e88bd61d56420a65ee39)), closes [#24](https://github.com/albert20260301/altertable-ruby/issues/24)
+* update method signatures to v0.9.0 specs ([#23](https://github.com/albert20260301/altertable-ruby/issues/23)) ([1c26f52](https://github.com/albert20260301/altertable-ruby/commit/1c26f5229aa4bd3811ac83351df06d3275496d2f))
+
+
+### Bug Fixes
+
+* add missing bundler/gem_tasks to Rakefile ([#16](https://github.com/albert20260301/altertable-ruby/issues/16)) ([6d021c9](https://github.com/albert20260301/altertable-ruby/commit/6d021c9f94d66fe491243d87ae591f0ab9303d4a)), closes [#15](https://github.com/albert20260301/altertable-ruby/issues/15)
+* read gem version dynamically from lib/altertable/version.rb ([#12](https://github.com/albert20260301/altertable-ruby/issues/12)) ([c2720a0](https://github.com/albert20260301/altertable-ruby/commit/c2720a08eca08534541e2262a82239f7c3f678ec))
+* **readme:** correct package name ([#33](https://github.com/albert20260301/altertable-ruby/issues/33)) ([5838578](https://github.com/albert20260301/altertable-ruby/commit/58385785e8849cda3627bdd04e563eadab933ba3))
+* **sorbet:** trigger build ([#31](https://github.com/albert20260301/altertable-ruby/issues/31)) ([e30cbbf](https://github.com/albert20260301/altertable-ruby/commit/e30cbbf6aa8c9264423101f69d572d25776ebff2))
+* **transport:** remove the hard dep on `faraday-retry` ([#42](https://github.com/albert20260301/altertable-ruby/issues/42)) ([f758d02](https://github.com/albert20260301/altertable-ruby/commit/f758d0254d86de2ea3d6105a429d885c6a8aadbf))
+
 ## [1.1.2](https://github.com/altertable-ai/altertable-ruby/compare/altertable/v1.1.1...altertable/v1.1.2) (2026-03-19)
 
 
